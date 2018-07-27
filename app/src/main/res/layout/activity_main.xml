@@ -8,6 +8,21 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/tv_location_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/location_name"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/tv_location_region"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/region_name_country"
+        android:layout_marginBottom="32dp"
+        android:textSize="16sp" />
+
+    <TextView
         android:id="@+id/tv_latitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

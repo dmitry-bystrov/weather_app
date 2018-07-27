@@ -6,4 +6,7 @@
     <string name="status_string">Status string</string>
     <string name="request_location_updates">Request location updates</string>
     <string name="location_update_received">Location update received</string>
+    <string name="region_name_country">Region name, Country</string>
+    <string name="location_name">Location name</string>
+    <string name="language_code">en-us</string>
 </resources>

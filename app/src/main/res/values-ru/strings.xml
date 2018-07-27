@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Погода</string>
+    <string name="latitude">Широта</string>
+    <string name="longitude">Долгота</string>
+    <string name="accuracy">Точность</string>
+    <string name="status_string">Статусная строка</string>
+    <string name="request_location_updates">Запрос местоположения</string>
+    <string name="location_update_received">Местоположение установлено</string>
+    <string name="region_name_country">Название региона, Страна</string>
+    <string name="location_name">Город</string>
+    <string name="language_code">ru-ru</string>
+</resources>
