@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Weather</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="accuracy">Accuracy</string>
+    <string name="status_string">Status string</string>
+    <string name="request_location_updates">Request location updates</string>
+    <string name="location_update_received">Location update received</string>
 </resources>
