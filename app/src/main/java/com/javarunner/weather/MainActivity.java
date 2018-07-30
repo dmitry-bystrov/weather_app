@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.javarunner.weather.datamodel.LocationData;
 import com.javarunner.weather.datamodel.WeatherData;
+import com.javarunner.weather.datamodel.Wind;
+import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
 
@@ -30,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int LOCATION_UPDATES_TIME = 900000;
     public static final int LOCATION_UPDATES_DISTANCE = 5000;
     public static final int PERMISSION_REQUEST_CODE = 10;
-    public static final String API_KEY = "8SHxlmx5AXHFthoHiturDohOThhcbFBl";
+    public static final String API_KEY = "XyxId075ap3OrAO5bigNVaGZMXUB89rG";
     public static final String BASE_URL = "http://dataservice.accuweather.com/";
     public static final String TRUE = "true";
 
@@ -39,12 +42,11 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView tvLocationName;
     private TextView tvLocationRegion;
-    private TextView tvLatitude;
-    private TextView tvLongitude;
-    private TextView tvAccuracy;
     private TextView tvWeatherText;
+    private TextView tvWindText;
     private TextView tvTemperature;
     private TextView tvHumidity;
+    private ImageView ivWeatherIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +60,11 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         tvLocationName = findViewById(R.id.tv_location_name);
         tvLocationRegion = findViewById(R.id.tv_location_region);
-        tvLatitude = findViewById(R.id.tv_latitude);
-        tvLongitude = findViewById(R.id.tv_longitude);
-        tvAccuracy = findViewById(R.id.tv_accuracy);
         tvWeatherText = findViewById(R.id.tv_weather_text);
+        tvWindText = findViewById(R.id.tv_wind_text);
         tvTemperature = findViewById(R.id.tv_temperature);
         tvHumidity = findViewById(R.id.tv_humidity);
+        ivWeatherIcon = findViewById(R.id.iv_weather_icon);
     }
 
     private void initRetrofit() {
@@ -158,6 +159,14 @@ public class MainActivity extends AppCompatActivity {
 
                         tvWeatherText.setText(weatherData[0].getWeatherText());
 
+                        Wind wind = weatherData[0].getWind();
+                        if (wind != null) {
+                            tvWindText.setText(String.format(Locale.getDefault(), "%s: %.0f %s",
+                                    getResources().getString(R.string.wind),
+                                    wind.getSpeed().getMetric().getValue(),
+                                    wind.getSpeed().getMetric().getUnit()));
+                        }
+
                         float temperatureValue = weatherData[0].getTemperature().getMetric().getValue();
                         tvTemperature.setText(String.format(Locale.getDefault(), "%s: %s%.0f%s",
                                 getResources().getString(R.string.temperature),
@@ -169,6 +178,8 @@ public class MainActivity extends AppCompatActivity {
                         tvHumidity.setText(String.format(Locale.getDefault(), "%s: %d%%",
                                 getResources().getString(R.string.humidity),
                                 humidity));
+
+                        updateWeatherIcon(weatherData[0].getWeatherIcon());
                     }
 
                     @Override
@@ -178,26 +189,18 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    private void updateWeatherIcon(int weatherIconId) {
+        if (weatherIconId > 0) {
+            Picasso
+                    .with(this)
+                    .load(String.format(Locale.ROOT, "%s%02d%s", "https://developer.accuweather.com/sites/default/files/", weatherIconId, "-s.png"))
+                    .into(ivWeatherIcon);
+        }
+    }
+
     private void updateLocation(Location location) {
         if (location == null) return;
-
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        float accuracy = location.getAccuracy();
-
-        tvLatitude.setText(String.format(Locale.getDefault(), "%s: %.6f",
-                getString(R.string.latitude),
-                latitude));
-
-        tvLongitude.setText(String.format(Locale.getDefault(), "%s: %.6f",
-                getString(R.string.longitude),
-                longitude));
-
-        tvAccuracy.setText(String.format(Locale.getDefault(), "%s: %.2f",
-                getString(R.string.accuracy),
-                accuracy));
-
-        requestLocationData(latitude, longitude);
+        requestLocationData(location.getLatitude(), location.getLongitude());
     }
 
     private void requestLocationPermissions() {
