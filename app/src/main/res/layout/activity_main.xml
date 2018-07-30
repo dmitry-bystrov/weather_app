@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:layout_margin="10dp"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <TextView
@@ -19,33 +19,48 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/region_name_country"
-        android:layout_marginBottom="32dp"
         android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tv_weather_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="@string/weather_description"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/tv_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/temperature" />
+
+    <TextView
+        android:id="@+id/tv_humidity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/humidity" />
 
     <TextView
         android:id="@+id/tv_latitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/latitude" />
+        android:layout_marginTop="30dp"
+        android:text="@string/latitude"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/tv_longitude"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/longitude" />
+        android:text="@string/longitude"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/tv_accuracy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/accuracy" />
-
-    <TextView
-        android:id="@+id/tv_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:layout_marginTop="32dp"
-        android:text="@string/status_string" />
+        android:text="@string/accuracy"
+        android:textSize="18sp" />
 
 </LinearLayout>

@@ -14,12 +14,6 @@ public class Country {
     @Expose
     private String englishName;
 
-    public Country(String iD, String localizedName, String englishName) {
-        this.iD = iD;
-        this.localizedName = localizedName;
-        this.englishName = englishName;
-    }
-
     public String getiD() {
         return iD;
     }

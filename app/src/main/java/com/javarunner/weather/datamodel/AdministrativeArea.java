@@ -17,13 +17,6 @@ public class AdministrativeArea {
     @Expose
     private String countryID;
 
-    public AdministrativeArea(String iD, String localizedName, String englishName, String countryID) {
-        this.iD = iD;
-        this.localizedName = localizedName;
-        this.englishName = englishName;
-        this.countryID = countryID;
-    }
-
     public String getiD() {
         return iD;
     }

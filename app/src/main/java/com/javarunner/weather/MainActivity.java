@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import com.javarunner.weather.datamodel.LocationData;
+import com.javarunner.weather.datamodel.WeatherData;
 
 import java.util.Locale;
 
@@ -26,11 +27,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int LOCATION_UPDATES_TIME = 10000;
-    public static final int LOCATION_UPDATES_DISTANCE = 1000;
+    public static final int LOCATION_UPDATES_TIME = 900000;
+    public static final int LOCATION_UPDATES_DISTANCE = 5000;
     public static final int PERMISSION_REQUEST_CODE = 10;
     public static final String API_KEY = "8SHxlmx5AXHFthoHiturDohOThhcbFBl";
     public static final String BASE_URL = "http://dataservice.accuweather.com/";
+    public static final String TRUE = "true";
 
     private LocationManager locationManager;
     private AccuWeather accuWeather;
@@ -40,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvLatitude;
     private TextView tvLongitude;
     private TextView tvAccuracy;
-    private TextView tvStatus;
+    private TextView tvWeatherText;
+    private TextView tvTemperature;
+    private TextView tvHumidity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +61,9 @@ public class MainActivity extends AppCompatActivity {
         tvLatitude = findViewById(R.id.tv_latitude);
         tvLongitude = findViewById(R.id.tv_longitude);
         tvAccuracy = findViewById(R.id.tv_accuracy);
-        tvStatus = findViewById(R.id.tv_status);
+        tvWeatherText = findViewById(R.id.tv_weather_text);
+        tvTemperature = findViewById(R.id.tv_temperature);
+        tvHumidity = findViewById(R.id.tv_humidity);
     }
 
     private void initRetrofit() {
@@ -78,40 +84,26 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestLocationCoordinates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
+                PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                        PackageManager.PERMISSION_GRANTED) {
             requestLocationPermissions();
             return;
         }
 
-        tvStatus.setText(R.string.request_location_updates);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         Criteria criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria, true),
+        String bestProvider = locationManager.getBestProvider(criteria, true);
+        updateLocation(locationManager.getLastKnownLocation(bestProvider));
+
+        locationManager.requestLocationUpdates(bestProvider,
                 LOCATION_UPDATES_TIME,
                 LOCATION_UPDATES_DISTANCE,
                 new LocationListener() {
                     @Override
                     public void onLocationChanged(Location location) {
-                        tvStatus.setText(R.string.location_update_received);
-
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-                        float accuracy = location.getAccuracy();
-
-                        tvLatitude.setText(String.format(Locale.getDefault(), "%s: %.6f",
-                                getString(R.string.latitude),
-                                latitude));
-
-                        tvLongitude.setText(String.format(Locale.getDefault(), "%s: %.6f",
-                                getString(R.string.longitude),
-                                longitude));
-
-                        tvAccuracy.setText(String.format(Locale.getDefault(), "%s: %.2f",
-                                getString(R.string.accuracy),
-                                accuracy));
-
-                        requestLocation(latitude, longitude);
+                        updateLocation(location);
                     }
 
                     @Override
@@ -131,40 +123,95 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void requestLocation(double latitude, double longitude) {
+    private void requestLocationData(double latitude, double longitude) {
         accuWeather.getLocationData(API_KEY, String.format(Locale.ROOT, "%.3f,%.3f", latitude, longitude), getString(R.string.language_code))
-        .enqueue(new Callback<LocationData>() {
-            @Override
-            public void onResponse(Call<LocationData> call, Response<LocationData> response) {
-                LocationData locationData;
+                .enqueue(new Callback<LocationData>() {
+                    @Override
+                    public void onResponse(Call<LocationData> call, Response<LocationData> response) {
+                        LocationData locationData;
 
-                if (response.body() == null) return;
-                if ((locationData = response.body()) == null) return;
+                        if ((locationData = response.body()) == null) return;
 
-                tvLocationName.setText(locationData.getLocalizedName());
-                tvLocationRegion.setText(String.format(Locale.getDefault(), "%s, %s",
-                        locationData.getAdministrativeArea().getLocalizedName(),
-                        locationData.getCountry().getLocalizedName()));
-            }
+                        tvLocationName.setText(locationData.getLocalizedName());
+                        tvLocationRegion.setText(String.format(Locale.getDefault(), "%s, %s",
+                                locationData.getAdministrativeArea().getLocalizedName(),
+                                locationData.getCountry().getLocalizedName()));
 
-            @Override
-            public void onFailure(Call<LocationData> call, Throwable t) {
-                tvStatus.setText("Get location data: failure");
-            }
-        });
+                        requestWeatherData(locationData);
+                    }
+
+                    @Override
+                    public void onFailure(Call<LocationData> call, Throwable t) {
+                    }
+                });
+    }
+
+    private void requestWeatherData(LocationData locationData) {
+        accuWeather.getWeatherData(locationData.getKey(), API_KEY, getString(R.string.language_code), TRUE)
+                .enqueue(new Callback<WeatherData[]>() {
+                    @Override
+                    public void onResponse(Call<WeatherData[]> call, Response<WeatherData[]> response) {
+                        WeatherData[] weatherData;
+
+                        if ((weatherData = response.body()) == null) return;
+                        if (weatherData.length < 1) return;
+
+                        tvWeatherText.setText(weatherData[0].getWeatherText());
+
+                        float temperatureValue = weatherData[0].getTemperature().getMetric().getValue();
+                        tvTemperature.setText(String.format(Locale.getDefault(), "%s: %s%.0f%s",
+                                getResources().getString(R.string.temperature),
+                                temperatureValue > 0 ? "+" : "",
+                                temperatureValue,
+                                "°C"));
+
+                        int humidity = weatherData[0].getRelativeHumidity();
+                        tvHumidity.setText(String.format(Locale.getDefault(), "%s: %d%%",
+                                getResources().getString(R.string.humidity),
+                                humidity));
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherData[]> call, Throwable t) {
+
+                    }
+                });
+    }
+
+    private void updateLocation(Location location) {
+        if (location == null) return;
+
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+        float accuracy = location.getAccuracy();
+
+        tvLatitude.setText(String.format(Locale.getDefault(), "%s: %.6f",
+                getString(R.string.latitude),
+                latitude));
+
+        tvLongitude.setText(String.format(Locale.getDefault(), "%s: %.6f",
+                getString(R.string.longitude),
+                longitude));
+
+        tvAccuracy.setText(String.format(Locale.getDefault(), "%s: %.2f",
+                getString(R.string.accuracy),
+                accuracy));
+
+        requestLocationData(latitude, longitude);
     }
 
     private void requestLocationPermissions() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION},
                 PERMISSION_REQUEST_CODE);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length == 1) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSION_REQUEST_CODE && grantResults.length == 2) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 requestLocationCoordinates();
             }
         }

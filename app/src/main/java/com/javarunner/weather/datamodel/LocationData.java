@@ -20,14 +20,6 @@ public class LocationData {
     @Expose
     private AdministrativeArea administrativeArea;
 
-    public LocationData(String key, String localizedName, String englishName, Country country, AdministrativeArea administrativeArea) {
-        this.key = key;
-        this.localizedName = localizedName;
-        this.englishName = englishName;
-        this.country = country;
-        this.administrativeArea = administrativeArea;
-    }
-
     public String getKey() {
         return key;
     }
